@@ -17,5 +17,4 @@ func main() {
 		splittedInput := strings.Fields(input)
 		fmt.Printf("Your command was: %s\n", splittedInput[0])
 	}
-	
 }
