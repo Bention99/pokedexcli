@@ -33,6 +33,11 @@ var cliCommands = map[string]cliCommand{
 		description: "Displays the names of 20 location areas in the Pokemon world",
 		callback: commandMap,
 	},
+	"mapb": {
+		name: "mapb",
+		description: "Displays the names of the previous 20 location areas in the Pokemon world",
+		callback: commandMapB,
+	},
 }
 
 func commandExit(c *config) error {
@@ -47,11 +52,39 @@ func commandHelp(c *config) error {
 }
 
 func commandMap(c *config) error {
-	err := getLocationAreas(c)
-	if err != nil {
-		fmt.Printf("Error calling API: %v", err)
-		os.Exit(0)
-		return errors.New("exit due to API error")
+	url := "https://pokeapi.co/api/v2/location-area/" 
+	if c.nextURL != nil {
+		url = *c.nextURL
 	}
+	apiResponse, err := getLocationAreas(url)
+	if err != nil {
+		fmt.Printf("Error in API handling: %v", err)
+		os.Exit(0)
+		return errors.New("exit due to API problem")
+	}
+
+	for _, r := range apiResponse.Results {
+		fmt.Println(r.Name)
+	}
+	c.nextURL = apiResponse.Next
+	c.previousURL = apiResponse.Previous
+	return errors.New("map requested")
+}
+
+func commandMapB(c *config) error {
+	url := "https://pokeapi.co/api/v2/location-area/" 
+	if c.previousURL != nil {
+		url = *c.previousURL
+	}
+	apiResponse, err := getLocationAreas(url)
+	if err != nil {
+		fmt.Printf("Error in API handling: %v", err)
+		os.Exit(0)
+		return errors.New("exit due to API problem")
+	}
+	for _, r := range apiResponse.Results {
+		fmt.Println(r.Name)
+	}
+	c.previousURL = apiResponse.Previous
 	return errors.New("map requested")
 }

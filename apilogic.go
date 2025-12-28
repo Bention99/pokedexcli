@@ -5,26 +5,48 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"encoding/json"
 )
 
-func getLocationAreas(c *config) error {
-	url := "https://pokeapi.co/api/v2/location-area/" 
-	if c.previousURL != nil {
-		url = url + *c.previousURL + "/"
-	}
+type locationAreaList struct {
+	Count    int             `json:"count"`
+	Next     *string         `json:"next"`
+	Previous *string         `json:"previous"`
+	Results  []locationArea  `json:"results"`
+}
+
+type locationArea struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+func getLocationAreas(url string) (locationAreaList, error) {
 	res, err := http.Get(url)
 	if err != nil {
-		return err
+		return locationAreaList{}, err
 	}
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
 		fmt.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-		return err
+		return locationAreaList{}, err
 	}
 	if err != nil {
-		return err
+		return locationAreaList{}, err
 	}
-	fmt.Printf("%s\n", body)
-	return nil
+	apiResponse, err := unmarshalBody(body)
+	if err != nil {
+		fmt.Println("Error Unmarshaling body")
+		return locationAreaList{}, err
+	}
+	return apiResponse, nil
+}
+
+func unmarshalBody(b []byte) (locationAreaList, error) {
+	var apiResponse locationAreaList
+	err := json.Unmarshal(b, &apiResponse)
+	if err != nil {
+		return locationAreaList{}, err
+	}
+	return apiResponse, nil
 }
