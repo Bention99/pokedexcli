@@ -82,9 +82,13 @@ func commandMapB(c *config) error {
 		os.Exit(0)
 		return errors.New("exit due to API problem")
 	}
+	if apiResponse.Previous == nil {
+		fmt.Println("you're on the first page")
+		return errors.New("mapb requested - but currently on first page")
+	}
 	for _, r := range apiResponse.Results {
 		fmt.Println(r.Name)
 	}
 	c.previousURL = apiResponse.Previous
-	return errors.New("map requested")
+	return errors.New("mapb requested")
 }
