@@ -1,12 +1,13 @@
-package main
+package commands
 
 import (
 	"fmt"
 	"errors"
 	"os"
+	"github.com/Bention99/pokedexcli/internal/api"
 )
 
-type config struct {
+type Config struct {
 	nextURL *string
 	previousURL *string
 }
@@ -14,49 +15,49 @@ type config struct {
 type cliCommand struct {
 	name string
 	description string
-	callback func(*config) error
+	Callback func(*Config) error
 }
 
-var cliCommands = map[string]cliCommand{
+var CliCommands = map[string]cliCommand{
 	"exit": {
 		name: "exit",
 		description: "Exit the Pokedex",
-		callback: commandExit,
+		Callback: commandExit,
 	},
 	"help": {
 		name: "help",
 		description: "Help for Pokedex commands",
-		callback: commandHelp,
+		Callback: commandHelp,
 	},
 	"map": {
 		name: "map",
 		description: "Displays the names of 20 location areas in the Pokemon world",
-		callback: commandMap,
+		Callback: commandMap,
 	},
 	"mapb": {
 		name: "mapb",
 		description: "Displays the names of the previous 20 location areas in the Pokemon world",
-		callback: commandMapB,
+		Callback: commandMapB,
 	},
 }
 
-func commandExit(c *config) error {
+func commandExit(c *Config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return errors.New("exit requested")
 }
 
-func commandHelp(c *config) error {
+func commandHelp(c *Config) error {
 	fmt.Println("Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
 	return errors.New("help requested")
 }
 
-func commandMap(c *config) error {
+func commandMap(c *Config) error {
 	url := "https://pokeapi.co/api/v2/location-area/" 
 	if c.nextURL != nil {
 		url = *c.nextURL
 	}
-	apiResponse, err := getLocationAreas(url)
+	apiResponse, err := api.GetLocationAreas(url)
 	if err != nil {
 		fmt.Printf("Error in API handling: %v", err)
 		os.Exit(0)
@@ -71,12 +72,12 @@ func commandMap(c *config) error {
 	return errors.New("map requested")
 }
 
-func commandMapB(c *config) error {
+func commandMapB(c *Config) error {
 	url := "https://pokeapi.co/api/v2/location-area/" 
 	if c.previousURL != nil {
 		url = *c.previousURL
 	}
-	apiResponse, err := getLocationAreas(url)
+	apiResponse, err := api.GetLocationAreas(url)
 	if err != nil {
 		fmt.Printf("Error in API handling: %v", err)
 		os.Exit(0)

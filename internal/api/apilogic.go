@@ -1,5 +1,4 @@
-package main
-
+package api
 
 import (
 	"fmt"
@@ -20,7 +19,7 @@ type locationArea struct {
 	URL  string `json:"url"`
 }
 
-func getLocationAreas(url string) (locationAreaList, error) {
+func GetLocationAreas(url string) (locationAreaList, error) {
 	res, err := http.Get(url)
 	if err != nil {
 		return locationAreaList{}, err

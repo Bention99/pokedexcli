@@ -2,6 +2,8 @@ package main
 
 import (
 	"testing"
+	"github.com/Bention99/pokedexcli/internal/api"
+    "github.com/Bention99/pokedexcli/internal/commands"
 )
 
 func TestCleanInput(t *testing.T) {

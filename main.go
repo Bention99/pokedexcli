@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"strings"
+    "github.com/Bention99/pokedexcli/internal/commands"
 )
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	cfg := &config{}
+	cfg := &commands.Config{}
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -19,11 +21,16 @@ func main() {
 		}
 		cleanedInput := cleanInput(input)
 		cmdName := cleanedInput[0]
-		cmd, ok := cliCommands[cmdName]
+		cmd, ok := commands.CliCommands[cmdName]
 		if !ok {
 			fmt.Println("Unknown command")
 			continue
 		}
-		cmd.callback(cfg)
+		cmd.Callback(cfg)
 	}
+}
+
+func cleanInput(text string) []string {
+	splittedText := strings.Fields(strings.ToLower(text))
+	return splittedText
 }
