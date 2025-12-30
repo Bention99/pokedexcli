@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"encoding/json"
+	"errors"
 )
 	
 type LocationArea struct {
@@ -59,21 +60,17 @@ type EncounterDetail struct {
 func GetPokemonInLocation(url, location string) (LocationArea, error) {
 	res, err := http.Get(url + "/" + location)
 	if err != nil {
-		return LocationArea{}, err
+		return LocationArea{}, errors.New("Error: Calling API failed\n")
 	}
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
 		fmt.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-		return LocationArea{}, err
-	}
-	if err != nil {
-		return LocationArea{}, err
+		return LocationArea{}, errors.New("Error: Bad response\n")
 	}
 	response, err := unmarshal(body)
 	if err != nil {
-		fmt.Println("Error Unmarshaling body")
-		return LocationArea{}, err
+		return LocationArea{}, errors.New("Error: Unmarshaling body\n")
 	}
 	return response, nil
 }

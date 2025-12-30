@@ -110,6 +110,10 @@ func commandExplore(c *Config) error {
 		os.Exit(0)
 		return errors.New("exit due to API problem")
 	}
-	fmt.Println(apiResponse.ID)
+	fmt.Printf("Exploring %s ...\n", apiResponse.Name)
+	fmt.Println("Found Pokemon:")
+	for _, p := range apiResponse.PokemonEncounters {
+		fmt.Printf(" - %s\n", p.Pokemon.Name)
+	}
 	return nil
 }

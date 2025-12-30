@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"encoding/json"
+	"errors"
 	"github.com/Bention99/pokedexcli/internal/pokecache"
 )
 
@@ -25,29 +26,24 @@ func GetLocationAreas(c pokecache.Cache, url string) (locationAreaList, error) {
 	if ok {
 		v, err := unmarshalBody(val)
 		if err != nil {
-			fmt.Println("Error Unmarshaling body")
-			return locationAreaList{}, err
+			return locationAreaList{}, errors.New("Error Unmarshaling body")
 		}
 		return v, nil
 	}
 	res, err := http.Get(url)
 	if err != nil {
-		return locationAreaList{}, err
+		return locationAreaList{}, errors.New("Error: Calling API failed\n")
 	}
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
 		fmt.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-		return locationAreaList{}, err
-	}
-	if err != nil {
-		return locationAreaList{}, err
+		return locationAreaList{}, errors.New("Error: Bad response\n")
 	}
 	c.Add(url, body)
 	apiResponse, err := unmarshalBody(body)
 	if err != nil {
-		fmt.Println("Error Unmarshaling body")
-		return locationAreaList{}, err
+		return locationAreaList{}, errors.New("Error: Unmarshaling body\n")
 	}
 	return apiResponse, nil
 }
