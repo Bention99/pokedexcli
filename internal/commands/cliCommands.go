@@ -5,11 +5,14 @@ import (
 	"errors"
 	"os"
 	"github.com/Bention99/pokedexcli/internal/api"
+	"github.com/Bention99/pokedexcli/internal/pokecache"
 )
 
 type Config struct {
+	PokeCache pokecache.Cache
 	nextURL *string
 	previousURL *string
+	Arg string
 }
 
 type cliCommand struct {
@@ -39,6 +42,11 @@ var CliCommands = map[string]cliCommand{
 		description: "Displays the names of the previous 20 location areas in the Pokemon world",
 		Callback: commandMapB,
 	},
+	"explore": {
+		name: "explore",
+		description: "Lists found Pokemons in Location",
+		Callback: commandExplore,
+	},
 }
 
 func commandExit(c *Config) error {
@@ -53,11 +61,11 @@ func commandHelp(c *Config) error {
 }
 
 func commandMap(c *Config) error {
-	url := "https://pokeapi.co/api/v2/location-area/" 
+	url := "https://pokeapi.co/api/v2/location-area/"
 	if c.nextURL != nil {
 		url = *c.nextURL
 	}
-	apiResponse, err := api.GetLocationAreas(url)
+	apiResponse, err := api.GetLocationAreas(c.PokeCache, url)
 	if err != nil {
 		fmt.Printf("Error in API handling: %v", err)
 		os.Exit(0)
@@ -73,11 +81,11 @@ func commandMap(c *Config) error {
 }
 
 func commandMapB(c *Config) error {
-	url := "https://pokeapi.co/api/v2/location-area/" 
+	url := "https://pokeapi.co/api/v2/location-area/"
 	if c.previousURL != nil {
 		url = *c.previousURL
 	}
-	apiResponse, err := api.GetLocationAreas(url)
+	apiResponse, err := api.GetLocationAreas(c.PokeCache, url)
 	if err != nil {
 		fmt.Printf("Error in API handling: %v", err)
 		os.Exit(0)
@@ -92,4 +100,16 @@ func commandMapB(c *Config) error {
 	}
 	c.previousURL = apiResponse.Previous
 	return errors.New("mapb requested")
+}
+
+func commandExplore(c *Config) error {
+	url := "https://pokeapi.co/api/v2/location-area/"
+	apiResponse, err := api.GetPokemonInLocation(url, c.Arg)
+	if err != nil {
+		fmt.Printf("Error in API handling: %v", err)
+		os.Exit(0)
+		return errors.New("exit due to API problem")
+	}
+	fmt.Println(apiResponse.ID)
+	return nil
 }

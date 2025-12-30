@@ -21,6 +21,8 @@ func NewCache(interval time.Duration) Cache {
 		mux:   &sync.Mutex{},
 	}
 
+	go c.reapLoop(interval)
+
 	return c
 }
 
@@ -34,7 +36,7 @@ func (c *Cache) Add(key string, value []byte) {
 	}
 }
 
-func (c *Cache) Get(key string) []byte, bool {
+func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mux.Lock()
 	defer c.mux.Unlock()
 

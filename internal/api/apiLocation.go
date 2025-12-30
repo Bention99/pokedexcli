@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"encoding/json"
+	"github.com/Bention99/pokedexcli/internal/pokecache"
 )
 
 type locationAreaList struct {
@@ -19,7 +20,16 @@ type locationArea struct {
 	URL  string `json:"url"`
 }
 
-func GetLocationAreas(url string) (locationAreaList, error) {
+func GetLocationAreas(c pokecache.Cache, url string) (locationAreaList, error) {
+	val, ok := c.Get(url)
+	if ok {
+		v, err := unmarshalBody(val)
+		if err != nil {
+			fmt.Println("Error Unmarshaling body")
+			return locationAreaList{}, err
+		}
+		return v, nil
+	}
 	res, err := http.Get(url)
 	if err != nil {
 		return locationAreaList{}, err
@@ -33,6 +43,7 @@ func GetLocationAreas(url string) (locationAreaList, error) {
 	if err != nil {
 		return locationAreaList{}, err
 	}
+	c.Add(url, body)
 	apiResponse, err := unmarshalBody(body)
 	if err != nil {
 		fmt.Println("Error Unmarshaling body")
@@ -47,5 +58,5 @@ func unmarshalBody(b []byte) (locationAreaList, error) {
 	if err != nil {
 		return locationAreaList{}, err
 	}
-	return apiResponse, nil
+	return apiResponse, nil 
 }
