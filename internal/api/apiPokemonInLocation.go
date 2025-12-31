@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"encoding/json"
 	"errors"
 )
 	
@@ -58,7 +57,7 @@ type EncounterDetail struct {
 }
 
 func GetPokemonInLocation(url, location string) (LocationArea, error) {
-	res, err := http.Get(url + "/" + location)
+	res, err := http.Get(url + location + "/")
 	if err != nil {
 		return LocationArea{}, errors.New("Error: Calling API failed\n")
 	}
@@ -68,18 +67,9 @@ func GetPokemonInLocation(url, location string) (LocationArea, error) {
 		fmt.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 		return LocationArea{}, errors.New("Error: Bad response\n")
 	}
-	response, err := unmarshal(body)
+	response, err := unmarshal[LocationArea](body)
 	if err != nil {
 		return LocationArea{}, errors.New("Error: Unmarshaling body\n")
 	}
 	return response, nil
-}
-
-func unmarshal(b []byte) (LocationArea, error) {
-	var response LocationArea
-	err := json.Unmarshal(b, &response)
-	if err != nil {
-		return LocationArea{}, err
-	}
-	return response, nil 
 }

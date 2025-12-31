@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"errors"
 	"os"
+	"math/rand"
 	"github.com/Bention99/pokedexcli/internal/api"
 	"github.com/Bention99/pokedexcli/internal/pokecache"
 )
 
 type Config struct {
 	PokeCache pokecache.Cache
+	Rand *rand.Rand
 	nextURL *string
 	previousURL *string
 	Arg string
@@ -47,6 +49,11 @@ var CliCommands = map[string]cliCommand{
 		description: "Lists found Pokemons in Location",
 		Callback: commandExplore,
 	},
+	"catch": {
+		name: "catch",
+		description: "Try to catch a Pokemon",
+		Callback: commandCatch,
+	},
 }
 
 func commandExit(c *Config) error {
@@ -56,7 +63,16 @@ func commandExit(c *Config) error {
 }
 
 func commandHelp(c *Config) error {
-	fmt.Println("Welcome to the Pokedex!\nUsage:\n\nhelp: Displays a help message\nexit: Exit the Pokedex")
+	fmt.Println(`Welcome to the Pokedex!
+		Usage:
+
+		help: Displays a help message
+		exit: Exit the Pokedex
+		map: Displays Locations where Pokemon could hide
+		mapb: Goes back to the previous Locations
+		explore: Lists found Pokemons in specified Location - Argument (Location Name) necessary
+		catch: Try your luck catching a specified Pokemon - Argument (Pokemon Name) necessary
+		`)
 	return errors.New("help requested")
 }
 
@@ -103,6 +119,9 @@ func commandMapB(c *Config) error {
 }
 
 func commandExplore(c *Config) error {
+	if c.Arg == "" {
+		return errors.New("Please provide Location Name")
+	}
 	url := "https://pokeapi.co/api/v2/location-area/"
 	apiResponse, err := api.GetPokemonInLocation(url, c.Arg)
 	if err != nil {
@@ -115,5 +134,24 @@ func commandExplore(c *Config) error {
 	for _, p := range apiResponse.PokemonEncounters {
 		fmt.Printf(" - %s\n", p.Pokemon.Name)
 	}
+	return nil
+}
+
+func commandCatch(c *Config) error {
+	if c.Arg == "" {
+		return errors.New("Please provide Pokemon Name")
+	}
+	url := "https://pokeapi.co/api/v2/pokemon/"
+	fmt.Printf("Throwing a Pokeball at %s...", c.Arg)
+	apiResponse, err := api.GetPokemonDetails(url, c.Arg)
+	if err != nil {
+		fmt.Printf("There is no Pokemon called %s\n", c.Arg)
+		return errors.New("API problem")
+	}
+	if c.Rand.Intn(200) <= apiResponse.BaseExperience {
+		fmt.Printf("%s escaped!\n", c.Arg)
+		return nil
+	}
+	fmt.Printf("%s was caught!\n", c.Arg)
 	return nil
 }

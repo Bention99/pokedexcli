@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"math/rand"
     "github.com/Bention99/pokedexcli/internal/commands"
 	"github.com/Bention99/pokedexcli/internal/pokecache"
 )
@@ -13,8 +14,10 @@ import (
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	pokeCache := pokecache.NewCache(5 * time.Second)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	cfg := &commands.Config{
 		PokeCache: pokeCache,
+		Rand: r,
 	}
 
 	for {
