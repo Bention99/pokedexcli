@@ -9,15 +9,23 @@ import (
 	"math/rand"
     "github.com/Bention99/pokedexcli/internal/commands"
 	"github.com/Bention99/pokedexcli/internal/pokecache"
+	"github.com/Bention99/pokedexcli/internal/pokedexCatches"
 )
 
 func main() {
+	const savePath = "data/caught.json"
+	caught, err := pokedexCatches.LoadCaughtJSON(savePath)
+	if err != nil {
+		panic(err)
+	}
+
 	scanner := bufio.NewScanner(os.Stdin)
 	pokeCache := pokecache.NewCache(5 * time.Second)
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	cfg := &commands.Config{
 		PokeCache: pokeCache,
 		Rand: r,
+		Caught: caught,
 	}
 
 	for {

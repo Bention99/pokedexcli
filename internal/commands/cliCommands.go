@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"github.com/Bention99/pokedexcli/internal/api"
 	"github.com/Bention99/pokedexcli/internal/pokecache"
+	"github.com/Bention99/pokedexcli/internal/pokedexCatches"
 )
 
 type Config struct {
@@ -15,6 +16,7 @@ type Config struct {
 	nextURL *string
 	previousURL *string
 	Arg string
+	Caught map[string]api.Pokemon
 }
 
 type cliCommand struct {
@@ -53,6 +55,16 @@ var CliCommands = map[string]cliCommand{
 		name: "catch",
 		description: "Try to catch a Pokemon",
 		Callback: commandCatch,
+	},
+	"free": {
+		name: "free",
+		description: "Frees all caught Pokemon",
+		Callback: commandFree,
+	},
+	"list": {
+		name: "list",
+		description: "Lists all caught Pokemon",
+		Callback: commandList,
 	},
 }
 
@@ -141,6 +153,11 @@ func commandCatch(c *Config) error {
 	if c.Arg == "" {
 		return errors.New("Please provide Pokemon Name")
 	}
+	_, ok := c.Caught[c.Arg]
+	if ok {
+		fmt.Printf("Pokemon already captured: %s\n", c.Arg)
+		return errors.New("Pokemon already captured.")
+	}
 	url := "https://pokeapi.co/api/v2/pokemon/"
 	fmt.Printf("Throwing a Pokeball at %s...", c.Arg)
 	apiResponse, err := api.GetPokemonDetails(url, c.Arg)
@@ -153,5 +170,21 @@ func commandCatch(c *Config) error {
 		return nil
 	}
 	fmt.Printf("%s was caught!\n", c.Arg)
+	c.Caught[apiResponse.Name] = apiResponse
+	_ = pokedexCatches.SaveCaughtJSON("data/caught.json", c.Caught)
+	return nil
+}
+
+func commandFree(c *Config) error {
+	_ = pokedexCatches.DeleteCaughtFile("data/caught.json")
+	fmt.Println("Pokemon released in the wild.")
+	return nil
+}
+
+func commandList(c *Config) error {
+	fmt.Println("You caught:")
+	for _, p := range c.Caught {
+		fmt.Printf(" - %s\n", p.Name)
+	}
 	return nil
 }
