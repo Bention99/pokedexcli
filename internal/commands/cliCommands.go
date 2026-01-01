@@ -61,10 +61,15 @@ var CliCommands = map[string]cliCommand{
 		description: "Frees all caught Pokemon",
 		Callback: commandFree,
 	},
-	"list": {
-		name: "list",
+	"pokedex": {
+		name: "pokedex",
 		description: "Lists all caught Pokemon",
-		Callback: commandList,
+		Callback: commandPokedex,
+	},
+	"inspect": {
+		name: "inspect",
+		description: "Lets you inspect a caught Pokemon",
+		Callback: commandInspect,
 	},
 }
 
@@ -84,6 +89,9 @@ func commandHelp(c *Config) error {
 		mapb: Goes back to the previous Locations
 		explore: Lists found Pokemons in specified Location - Argument (Location Name) necessary
 		catch: Try your luck catching a specified Pokemon - Argument (Pokemon Name) necessary
+		free: Frees all caught Pokemon
+		list: Lists all caught Pokemon
+		inspect: Lets you inspect a caught Pokemon - Argument (Pokemon Name) necessary
 		`)
 	return errors.New("help requested")
 }
@@ -181,10 +189,29 @@ func commandFree(c *Config) error {
 	return nil
 }
 
-func commandList(c *Config) error {
-	fmt.Println("You caught:")
+func commandPokedex(c *Config) error {
+	fmt.Println("Your Pokedex:")
 	for _, p := range c.Caught {
 		fmt.Printf(" - %s\n", p.Name)
+	}
+	return nil
+}
+
+func commandInspect(c *Config) error {
+	val, ok := c.Caught[c.Arg]
+	if !ok {
+		fmt.Printf("You haven't caught %s\n", c.Arg)
+	}
+	fmt.Printf("Name: %s\n", val.Name)
+	fmt.Printf("Height: %d\n", val.Height)
+	fmt.Printf("Weight: %d\n", val.Weight)
+	fmt.Println("Stats:")
+	for _, s := range val.Stats {
+		fmt.Printf(" -%s: %d\n", s.Stat.Name, s.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, t := range val.Types {
+		fmt.Printf(" -%s\n", t.Type.Name)
 	}
 	return nil
 }
